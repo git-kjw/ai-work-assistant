@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "basic-memory": {
+      "command": "/Users/jwkim/.local/bin/basic-memory",
+      "args": ["mcp"],
+      "env": {
+        "BASIC_MEMORY_HOME": "/Users/jwkim/ai-work-assistant/memory"
+      }
+    }
+  }
+}
