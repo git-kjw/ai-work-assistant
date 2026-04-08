@@ -6,7 +6,6 @@ GitHub Copilot CLI + Basic Memory 기반의 개인 업무 비서 시스템.
 
 ## 핵심 아이디어
 
-- **코드 0줄.** CLAUDE.md 지침과 마크다운 노트만으로 동작한다.
 - **Copilot CLI가 에이전트 런타임.** 별도 서버, 스케줄러, MCP 서버 개발 없이 Copilot CLI가 직접 Basic Memory MCP 도구를 호출한다.
 - **지식은 Basic Memory에.** 시멘틱 검색으로 관련 맥락을 자동 연결한다.
 - **작업 디렉토리 분리.** `~/ai-work-assistant`에서 CLI 실행, 실제 프로젝트는 `~/IdeaProjects`에 위치.
