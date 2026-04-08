@@ -73,7 +73,7 @@ Claude Code에서 자연어로 말하면 된다. 카테고리별 대표 예시:
 ## 프로젝트 구조
 
 ```
-ai-assistant/
+ai-work-assistant/
 ├── CLAUDE.md                              # 에이전트 지침
 ├── README.md
 ├── GUIDE.md                               # 시작 로드맵 & 장기 운영 전략
