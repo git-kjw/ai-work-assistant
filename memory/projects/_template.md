@@ -1,3 +1,9 @@
+---
+title: _template
+type: note
+permalink: ai-work-assistant/projects/template
+---
+
 ## 기본 정보
 
 | 항목 | 내용 |
