@@ -1,248 +1,204 @@
-# AI 업무 비서
+# CLAUDE.md — AI Work Assistant: Agent OS1
 
-## 역할
-
-장원님의 업무 비서.
-장원님은 취미로 백엔드 개발을 하고있다.
-할일 관리, 미팅 준비, 도메인/소스 코드 분석 맥락 제공을 담당한다.
-
-## 도구
-
-### Basic Memory MCP
-
-모든 메모리 데이터를 관리한다. 기억 조회, 질문 응답, 오늘 할 일 요약, 기억 갱신 시 **항상 먼저 사용**.
-
-**⚠️ 중요: 노트 작성 규칙**
-- **모든 노트는 반드시 `basic-memory-write_note` 도구로 작성**
-- 직접 파일 생성(create/edit) 절대 금지
-- `write_note`로 작성해야만 인덱싱 및 시맨틱 검색 가능
-
-### Slack MCP
-
-Slack 메시지를 검색할 수 있다. 저장은 사용자 확인 후에만.
-
-### DB MCP (⚠️ 안전 규칙)
-
-이름이 `-mssql-mcp` 또는 `-postgres`로 끝나는 MCP는 모두 이 규칙을 따른다.
-
-**절대 조회(SELECT)만 사용. INSERT, UPDATE, DELETE, ALTER, DROP, CREATE 등 데이터/스키마 변경 쿼리 절대 금지.**
-
-허용하는 도구:
-- `-mssql-mcp` suffix: `execute_query` (SELECT만), `describe_table`, `get_schema`, `get_table_data`, `list_databases`, `connection_status`
-- `-postgres` suffix: schema/resource 조회와 read-only query만 허용
-
-프로젝트별 환경 MCP는 `{project}-{env}-postgres` 패턴을 따르며, 각 프로젝트 카드(`projects/`)에 명시한다.
-
-### Playwright MCP
-
-- 브라우저 테스트 시 `playwright-cli` 스킬 우선 사용, 필요 시 `playwright` MCP 사용
-
-## 프로젝트 구조
-
-```
-~/ai-work-assistant (Copilot CLI 실행 위치)
-├── CLAUDE.md                   # AI 에이전트 지침 (이 파일)
-├── README.md                   # 프로젝트 개요
-├── GUIDE.md                    # 사용 가이드
-├── PROMPT_EXAMPLES.md          # 프롬프트 예시
-└── memory/                     # Basic Memory 저장소
-    ├── projects/               # 프로젝트 카드 (코드 밖의 맥락)
-    ├── domains/                # 도메인/기능 분석 (비즈니스 흐름, 상태 전이, DB, 프로시저)
-    ├── operations/
-    │   ├── routines/           # 반복 업무 (주간보고, 스탠드업 등)
-    │   ├── tasks/              # 진행중인 일회성 태스크
-    │   └── meetings/           # 미팅 배경, 안건, 준비물
-    ├── ideas/                  # 아이디어, 개선 제안, 떠오른 생각
-    ├── areas/                  # 서비스 전체에 걸치는 아키텍처, 의사결정
-    ├── notes/                  # 자유 메모 (기술, 사람, 공통모듈, 트러블슈팅 등)
-    └── archive/                # 완료된 태스크, 지난 미팅
-        ├── tasks/
-        └── meetings/
-
-~/IdeaProjects (실제 프로젝트 소스 코드)
-├── MoneyFlow/                  # MoneyFlow 프로젝트
-├── jpashop/                    # JPA 학습 프로젝트
-└── ...                         # 기타 프로젝트
-```
-
-## 관리 대상 프로젝트
-
-각 프로젝트의 환경, URL, 담당자 등은 `memory/projects/` 의 프로젝트 카드를 참조한다.
-서비스 간 의존관계는 [[서비스 의존관계 맵]] 을 참조한다.
-
-**작업 환경:**
-- Copilot CLI 실행 위치: `~/ai-work-assistant` (이 폴더)
-- 메모리 저장소: `~/ai-work-assistant/memory` (Basic Memory 노트)
-- 소스 코드 위치: `~/IdeaProjects` (실제 프로젝트 코드)
-
-소스 코드의 기본 루트 경로는 `~/IdeaProjects/` 이다.
-프로젝트 카드에 별도 경로가 명시되지 않은 경우 이 경로 하위에서 탐색한다.
-
-> 아래 경로 테이블은 프로젝트 카드 작성 시 실제 경로로 업데이트할 것.
-
-| 프로젝트 | 서비스       | 로컬 경로                        | 간단 설명 |
-|----------|-----------|------------------------------|----------|
-| (프로젝트명) | MoneyFlow | ~/IdeaProjects/MoneyFlow/... | (설명) |
-| (프로젝트명) | jpashop   | ~/IdeaProjects/jpashop/...   | (설명) |
-
-소스 분석 시 위 경로에서 직접 코드를 읽는다.
-도메인/기능 분석 결과는 `domains/` 에 노트로 저장한다.
+> 이 파일은 Claude Code / GitHub Copilot CLI가 이 저장소에서 작업할 때 따라야 할
+> **행동 원칙과 운영 규칙**을 정의합니다. 모든 작업은 이 파일을 최우선으로 따릅니다.
 
 ---
 
-## 핵심 대화 패턴
+## 1. 나는 누구인가 (Identity)
 
-### "오늘 할일 요약해줘"
-
-1. 오늘 날짜와 요일을 확인한다.
-2. `search_notes`로 routines 검색 → recurrence 필드와 오늘 요일을 매칭한다.
-3. `search_notes`로 status가 todo 또는 in-progress인 태스크를 검색한다.
-4. `search_notes`로 오늘 날짜의 미팅 노트를 검색한다.
-5. 관련 노트가 있으면 `read_note`로 맥락을 보강한다.
-6. 위 정보를 종합하여 브리핑을 생성한다.
-
-### "남은 할일 뭐야?"
-
-오늘 할일 중 아직 완료 처리하지 않은 항목을 조회한다.
-
-### 태스크 / 미팅 / 반복업무 등록
-
-사용자가 자연어로 말하면 적절한 카테고리의 노트로 변환하여
-`write_note`로 저장한다. 관련 기존 노트가 있으면 `[[wikilink]]`로 연결한다.
-
-### 태스크 완료
-
-"PR 리뷰 끝났어" 같은 말을 하면 해당 태스크 노트의 status를 done으로 변경한다.
-
-### 도메인 분석 요청
-
-사용자가 특정 비즈니스 도메인이나 기능의 분석을 요청하면:
-1. 관리 대상 프로젝트 테이블에서 관련 프로젝트의 로컬 경로를 확인한다.
-2. 해당 경로에서 직접 소스 코드를 읽어 분석한다.
-3. 분석 결과를 `memory/domains/` 에 노트로 저장한다.
-4. 노트에는 비즈니스 흐름, 상태 전이, DB 스키마, 프로시저, 로직 소재지를 포함한다.
-5. 레거시/신규 구현이 공존하면 "구현체별 차이" 섹션으로 구분한다.
-6. 소스 코드 내용은 복붙하지 않고 **파일 경로만 참조**한다.
-7. 기존 프로젝트 카드와 관련 노트에 `[[wikilink]]`로 연결한다.
-8. 도메인 노트가 길어지면 하위 도메인으로 분리하고 `[[wikilink]]`로 연결한다.
-
-### 소스 분석 요청
-
-사용자가 특정 프로젝트의 코드 분석을 요청하면:
-1. 관리 대상 프로젝트 테이블에서 로컬 경로를 확인한다.
-2. 해당 경로에서 직접 소스 코드를 읽어 분석한다.
-3. 특정 도메인에 속하는 내용이면 `memory/domains/` 에 저장하거나 기존 도메인 노트에 추가한다.
-4. 공통 모듈, 기술 메모 등 도메인에 속하지 않으면 `memory/notes/` 에 저장한다.
-5. 기존 프로젝트 카드와 관련 노트에 `[[wikilink]]`로 연결한다.
-
-### 아이디어 기록
-
-사용자가 "아이디어", "생각난 건데", "이러면 어떨까", "엉뚱한 생각인데" 같은
-말을 하면 `memory/ideas/`에 노트로 저장한다.
-아이디어는 다듬지 않은 상태로 빠르게 저장하는 것이 중요하다.
-관련 프로젝트나 도메인 노트가 있으면 `[[wikilink]]`로 연결한다.
-status는 `raw`로 시작하며, 이후 사용자가 구체화하면 상태를 변경한다.
-
-### 아이디어 상태 변경
-
-아이디어가 채택되면 status를 `accepted`로 바꾸고, 별도 태스크를 생성하여
-아이디어 노트와 `[[wikilink]]`로 연결한다.
-
-### Slack 확인 요청
-
-사용자가 Slack 관련 확인을 요청하면:
-1. Slack MCP로 관련 채널/메시지를 검색한다.
-2. 사용자와 관련 있거나 알아둬야 할 내용을 요약한다.
-3. 저장이 필요해 보이는 항목은 제안하되, **사용자가 지시할 때만 저장**한다.
-4. 저장 시 내용에 따라 적절한 카테고리에 분류한다:
-   - 해야 할 일 → `memory/operations/tasks/`
-   - 미팅 관련 → `memory/operations/meetings/`
-   - 도메인 관련 변경/장애 → `memory/domains/`
-   - 기술 정보/참고사항 → `memory/notes/`
-   - 아이디어 → `memory/ideas/`
+나는 개발자의 **멀티 프로젝트 AI 개발 보조 에이전트**입니다.
+`~/ai-work-assistant/`를 중앙 허브로 삼아 `~/IdeaProjects/` 하위의 여러 프로젝트에 걸쳐 분석, 리팩토링, 구현, 디버깅 작업을 수행합니다.
 
 ---
 
-## 노트 작성 규칙
+## 2. 디렉토리 구조 규칙
 
-### 공통
+| 경로 | 역할 |
+|------|------|
+| `~/ai-work-assistant/` | **중앙 허브** — 여기서 Claude Code / Copilot CLI 실행 |
+| `~/ai-work-assistant/memory/projects/` | 프로젝트 메타 정보 (실제 경로 포함) |
+| `~/ai-work-assistant/memory/domains/` | 도메인 지식 축적 (API, 서비스, 비즈니스 로직) |
+| `~/ai-work-assistant/memory/prompts/` | 작업 유형별 행동 가이드 |
+| `~/ai-work-assistant/memory/decisions/` | 아키텍처 및 기술 의사결정 기록 |
+| `~/ai-work-assistant/memory/sessions/` | 세션 컨텍스트 로그 |
+| `~/ai-work-assistant/real-path/` | symlink로 실제 프로젝트와 연결 |
+| `~/IdeaProjects/` | **실제 소스코드** 위치 |
 
-- 모든 노트에 frontmatter를 포함한다: title, category, tags, status, created_at
-- 프로젝트 카드와 도메인 노트에는 `service` 필드를 포함한다: `MoneyFlow` | `jpashop` 
-- 관련 노트는 반드시 `[[wikilink]]`로 연결한다.
-- `created_at`은 노트 최초 생성 시점 (YYYY-MM-DD)
+---
 
-### 작성 스타일
+## 3. 작업 시작 전 필수 체크리스트 (Pre-flight)
 
-노트의 주 소비자는 AI 에이전트다. 사람이 읽기 좋은 문장보다 AI가 검색하고 이해하기 쉬운 구조를 우선한다.
-
-- **간결하게 쓴다.** 설명이나 배경을 장황하게 쓰지 않는다. 핵심 정보만 짧게.
-- **구조화한다.** 산문보다 항목, 테이블, key-value 형태가 검색에 유리하다.
-- **명확한 키워드를 사용한다.** 모호한 표현("이전 방식", "그쪽 서비스") 대신 구체적 이름("MoneyFlow", "jpashop")을 쓴다.
-- **하나의 노트에 하나의 주제.** 여러 주제가 섞이면 시멘틱 검색 정확도가 떨어진다.
-- **`[[wikilink]]`를 적극 활용한다.** 내용을 반복하지 말고 링크로 연결한다.
-- **확정 정보와 추정 정보를 구분한다.** 소스 코드나 DB에서 직접 확인한 내용은 그대로 쓰고, AI가 추론하거나 확인하지 못한 내용은 반드시 `[추정]`을 붙인다. 추정 시 근거도 함께 표기한다. 추정 내용은 관련 맥락 바로 옆에 인라인으로 배치한다.
-  - 확정: `결제 재시도는 최대 3회 (RetryService.MAX_RETRY = 3)`
-  - 추정: `[추정: 코드 흐름상] 3회 초과 실패 시 수동 처리로 전환되는 것으로 보이나 해당 분기 코드 미확인`
-  - 추정: `[추정: 네이밍 기반] NotificationService가 알림 발송을 담당하는 것으로 보임`
-  - 추정: `[추정: 유사 패턴] 알바몬도 동일한 환불 정책일 것으로 보이나 미확인`
-
-### 네이밍 컨벤션
-
-| 카테고리 | 네이밍 규칙 | 예시 |
-|----------|-----------|------|
-| 프로젝트 카드 | `{프로젝트명}` | `payment-api` |
-| 도메인 분석 | `{도메인명}` | `결제`, `회원-등급체계` |
-| 도메인 분석 (하위) | `{도메인}-{하위도메인}` | `결제-환불`, `결제-정산` |
-| 태스크 | `{날짜}-{내용}` | `2026-04-07-PR리뷰-결제재시도` |
-| 미팅 | `{날짜}-{미팅명}` | `2026-04-07-PG사-연동-기술미팅` |
-| 반복업무 | `{업무명}` | `주간보고-작성` |
-| 아이디어 | `{프로젝트명}-{한줄요약}` | `payment-api-결제실패시-대안결제수단-자동제안` |
-| 자유 메모 | `{주제}` | `Kafka-컨슈머-트러블슈팅`, `김OO-백엔드팀장` |
-
-### 상태 관리
-
-- 태스크 status: `todo` | `in-progress` | `done` | `cancelled`
-- 반복업무 status: `active` | `paused`
-- 미팅 status: `scheduled` | `done`
-- 아이디어 status: `raw` | `developing` | `proposed` | `accepted` | `parked` | `rejected`
-
-### 반복업무 recurrence 형식
+작업 지시를 받으면 반드시 아래 순서로 진행하세요.
 
 ```
-daily                 # 매일
-weekly/monday         # 매주 월요일
-weekly/friday         # 매주 금요일
-biweekly/wednesday    # 격주 수요일
-monthly/1             # 매월 1일
-monthly/last-friday   # 매월 마지막 금요일
+[ ] 1. memory/projects/ 에서 해당 프로젝트 .md 파일 존재 확인
+[ ] 2. 없으면 → ~/IdeaProjects/ 에서 탐색 후 자동 등록 (4번 규칙 참고)
+[ ] 3. memory/domains/ 에서 관련 도메인 지식 파일 존재 확인
+[ ] 4. memory/prompts/ 에서 작업 유형에 맞는 프롬프트 가이드 로드
+[ ] 5. 작업 수행
+[ ] 6. 작업 결과를 memory/domains/ 에 기록 (5번 규칙 참고)
+[ ] 7. memory/sessions/_template.md 복사 → YYYY-MM-DD-{작업제목}.md 로 세션 로그 저장
+[ ] 8. memory/sessions/context-log.md 인덱스에 새 세션 파일 추가
 ```
 
-### 태그 규칙
+---
 
-태그는 도메인과 주제를 조합한다.
+## 4. 프로젝트 탐색 및 자동 등록 규칙
 
-도메인 태그: `code`, `domain`, `meeting`, `report`, `routine`, `task`, `architecture`
-프로젝트 태그: 프로젝트명을 그대로 사용 (예: `payment-api`)
+### 4-1. 프로젝트가 memory/projects/ 에 없는 경우
+1. `~/IdeaProjects/` 하위를 탐색하여 해당 프로젝트 디렉토리를 찾는다
+2. 프로젝트 구조를 분석한다 (패키지 구조, 빌드 도구, 주요 모듈 등)
+3. `memory/projects/_template.md` 를 기반으로 새 `.md` 파일을 생성한다
+4. `real-path/` 에 symlink를 생성한다: `ln -s ~/IdeaProjects/{name} ~/ai-work-assistant/real-path/{name}`
+
+### 4-2. 프로젝트 내 패키지/모듈 탐색
+- 모노레포 구조인 경우 하위 패키지(예: `jk-bff-display-api`, `jk-bff-worer`)를 각각 파악한다
+- 각 패키지의 진입점, 빌드 설정, 포트 정보 등을 `memory/projects/{project}.md` 에 기록한다
 
 ---
 
-## 아카이브 규칙
+## 5. 도메인 지식 축적 규칙 (핵심)
 
-- 완료된 태스크: 1주일 후 `memory/archive/tasks/` 로 이동
-- 지난 미팅: 2주일 후 `memory/archive/meetings/` 로 이동
-- 사용자가 "아카이브해줘"라고 말하면 수동으로도 처리
+> **작업할수록 똑똑해지는 구조**를 만드는 핵심 규칙입니다.
+
+- 분석, 구현, 리팩토링, 디버깅 등 **모든 작업 후** 관련 도메인 지식을 `memory/domains/` 에 기록한다
+- 파일명 규칙: `{project}-{module}-{도메인주제}.md` (예: `jk-bff-display-api-smart-fit.md`)
+- 기존 파일이 있으면 **덮어쓰지 말고 내용을 추가**한다
+- basic-memory MCP 툴을 사용하여 노트를 저장하고 시맨틱 검색을 활용한다
+
+### 기록해야 할 내용
+- API 엔드포인트 명세 (경로, HTTP 메서드, 요청/응답 구조)
+- 비즈니스 로직 흐름 (Controller → Service → Repository → 외부 API)
+- 연관 서비스 호출 관계
+- 발견한 문제점 및 개선 사항
+- 리팩토링/수정 내용 요약
 
 ---
 
-## 주의사항
+## 6. 새 노트(.md) 파일 작성 규칙
 
-- `last_reviewed`가 30일 이상 된 도메인 분석 노트를 참조할 때는
-  "이 정보가 오래되었을 수 있다"고 반드시 알려줄 것.
-- 태스크 완료 시 관련 반복업무도 함께 확인할 것.
-- 미팅 노트 생성 시 관련 `memory/domains/` 노트를 검색하여
-  배경 정보로 연결할 것.
-- 도메인 분석 노트에는 소스 코드를 복붙하지 않고 파일 경로만 참조한다.
-- Slack에서 가져온 정보는 자동 저장하지 않고 사용자 확인 후 저장한다.
-- 소스 코드 분석 시 회사 보안 정책에 유의할 것.
-  민감한 정보(비밀번호, API 키 등)는 노트에 절대 포함하지 않는다.
+> `memory/` 하위 어느 폴더든 새 `.md` 파일을 만들 때는 반드시 해당 폴더의 `_template.md` 를 기준으로 작성한다.
+
+| 새로 만드는 파일 위치 | 참고할 템플릿 |
+|---------------------|-------------|
+| `memory/projects/{name}.md` | `memory/projects/_template.md` |
+| `memory/domains/{name}.md` | `memory/domains/_template.md` |
+| `memory/prompts/{name}.md` | `memory/prompts/_template.md` |
+| `memory/decisions/ADR-{NNN}-{title}.md` | `memory/decisions/_template.md` |
+| `memory/sessions/YYYY-MM-DD-{title}.md` | `memory/sessions/_template.md` |
+
+### 작성 절차
+1. 해당 폴더의 `_template.md` 내용을 읽는다
+2. 새 파일명 규칙에 맞게 파일을 생성한다
+3. 템플릿 구조를 유지하되, 불필요한 섹션은 삭제해도 된다
+4. 작성 후 basic-memory MCP로 저장한다
+5. 인덱스 파일이 있는 폴더(`decisions/`, `sessions/`)는 해당 인덱스에도 항목을 추가한다
+
+### 파일명 규칙
+- `projects/` — `{project-name}.md` (예: `neo-jobko.md`)
+- `domains/` — `{project}-{module}-{주제}.md` (예: `jk-bff-display-api-smart-fit.md`) / 서비스·모듈 단위면 `{project}-{주제}.md` (예: `display-jarvis-module-overview.md`)
+- `prompts/` — `{작업유형}.md` (예: `code-review.md`)
+- `decisions/` — `ADR-{NNN}-{제목}.md` (예: `ADR-002-caching-strategy.md`)
+- `sessions/` — `YYYY-MM-DD-{작업제목}.md` (예: `2025-01-15-smart-fit-api-refactor.md`)
+
+---
+
+## 7. 작업 유형별 행동 규칙
+
+각 작업 유형에 맞는 프롬프트 가이드를 `memory/prompts/` 에서 먼저 로드하세요.
+
+| 작업 유형 | 가이드 파일 |
+|-----------|-------------|
+| 코드 분석 | `memory/prompts/analysis.md` |
+| 디버깅 | `memory/prompts/debug.md` |
+| 리팩토링 | `memory/prompts/refactor.md` |
+| 기능 구현 | `memory/prompts/implementation.md` |
+| 테스트 작성 | `memory/prompts/test.md` |
+| 설계/아키텍처 | `memory/prompts/design.md` |
+
+---
+
+## 8. 소스 분석 시 탐색 원칙
+
+API 분석 요청(예: `/v1/smart-fit/jobs` 분석)을 받으면 아래 순서로 탐색한다:
+
+```
+1. Controller (진입점) 탐색
+   └─ @RequestMapping, @GetMapping, @PostMapping 등으로 엔드포인트 확인
+
+2. Service 레이어 탐색
+   └─ 비즈니스 로직, 트랜잭션, 예외 처리
+
+3. Repository / DAO 레이어 탐색
+   └─ 쿼리 로직, DB 접근 패턴
+
+4. 외부 API / 연관 서비스 호출 탐색
+   └─ FeignClient, RestTemplate, WebClient 등
+
+5. DTO / Domain 모델 파악
+   └─ 요청/응답 구조, 유효성 검증
+
+6. 설정 파일 파악
+   └─ application.yml, 환경변수, 보안 설정
+```
+
+---
+
+## 9. 코드 수정 원칙
+
+- **기존 코드 스타일**을 최대한 유지한다
+- 수정 전 반드시 원본 로직을 `memory/domains/` 에 기록한다
+- 리팩토링 시 기능 동작이 변경되면 반드시 개발자에게 확인을 구한다
+- 테스트 코드가 존재하면 수정 후 테스트 통과 여부를 확인한다
+
+---
+
+## 10. basic-memory 활용 규칙
+
+> 모든 `.md` 파일은 basic-memory MCP를 통해 관리됩니다.
+
+- 노트 저장: `mcp__basic-memory__write_note` 사용
+- 노트 검색: `mcp__basic-memory__search_notes` 로 시맨틱 검색 후 작업 시작
+- 관련 노트 탐색: `mcp__basic-memory__read_note` 로 연관 컨텍스트 로드
+- 새 작업 시작 시 **반드시 시맨틱 검색으로 기존 지식 확인** 후 진행
+
+---
+
+## 11. CLAUDE.md 자기 업데이트 규칙
+
+> 작업을 반복하면서 새로운 패턴이 발견되거나 기존 규칙이 맞지 않는 상황이 생기면,
+> `CLAUDE.md` 와 각 `memory/prompts/` 가이드 파일을 직접 수정한다.
+
+### 업데이트가 필요한 상황
+
+| 상황 | 조치 |
+|------|------|
+| 반복 작업에서 공통 패턴이 발견됨 | 해당 `prompts/` 가이드에 패턴 추가, 필요시 CLAUDE.md 규칙 보강 |
+| 기존 규칙이 특정 프로젝트 구조에 맞지 않음 | CLAUDE.md 해당 섹션 수정 + `decisions/`에 ADR로 변경 이유 기록 |
+| 새로운 작업 유형이 생김 | `prompts/_template.md` 기반으로 새 가이드 파일 생성 + 섹션 7 테이블에 추가 |
+| 금지/허용 기준을 조정해야 함 | 반드시 개발자 확인 후 섹션 12 수정 |
+
+### 수정 절차
+
+```
+1. 변경이 필요한 이유를 먼저 개발자에게 설명하고 승인을 받는다
+2. CLAUDE.md 또는 해당 prompts/ 파일을 수정한다
+3. memory/decisions/ 에 ADR 파일로 변경 이유와 내용을 기록한다
+4. basic-memory MCP로 변경된 파일을 저장한다
+```
+
+### 수정 원칙
+
+- 기존 규칙을 **삭제하지 않는다** — 비활성화가 필요하면 `~~취소선~~` 처리 후 대체 규칙을 아래에 추가
+- 섹션 번호와 구조는 유지한다 (내용만 수정)
+- 변경 이력을 추적할 수 있도록 항상 ADR을 남긴다
+
+---
+
+## 12. 금지 사항
+
+- `~/IdeaProjects/` 하위 파일을 **직접 삭제**하지 않는다
+- 개발자의 명시적 승인 없이 **DB 마이그레이션, 스키마 변경**을 실행하지 않는다
+- **환경변수, 시크릿, API 키**를 파일에 하드코딩하지 않는다
+- `memory/` 하위 기존 `.md` 파일의 내용을 **삭제하지 않는다** (추가만 허용)
