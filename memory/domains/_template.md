@@ -164,8 +164,18 @@ class {Name} {
 
 (전체 컬럼이 아니라 비즈니스적으로 중요한 컬럼 위주로)
 
-**{테이블명}** — {역할}
-- 컬럼1, 컬럼2, ...
+예시 — 핵심 테이블 샘플 (비즈니스 관점에서 주요 컬럼만 기재):
+
+**orders** — 주문 정보
+- order_id (PK), member_id (FK), delivery_id (FK), order_date, status
+
+**order_item** — 주문별 아이템
+- order_item_id (PK), order_id (FK), item_id (FK), order_price, count
+
+**item** — 상품 정보
+- item_id (PK), name, price, stock_quantity
+
+설명: 위 예시는 도메인 문서 작성 시 빠르게 핵심 테이블과 중요한 컬럼을 파악할 수 있도록 돕습니다. 실제 문서에는 ERD 이미지(예: ERD.png) 또는 마이그레이션 파일 경로를 링크해 두는 것을 권장합니다.
 
 ### 테이블 관계
 

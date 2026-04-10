@@ -1,7 +1,7 @@
 ---
 title: jpashop
 type: note
-permalink: ai-work-assistant/projects/jpashop-1
+permalink: ai-work-assistant/projects/jpashop
 tags:
 - jpashop
 - project-card

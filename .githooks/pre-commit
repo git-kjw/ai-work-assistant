@@ -1,0 +1,23 @@
+#!/bin/sh
+# Pre-commit hook: Prevent committing files containing 'directory' configured with 'memory/' prefix
+PATTERN='directory.*memory|memory/memory'
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+if [ -z "$STAGED_FILES" ]; then
+  exit 0
+fi
+bad=0
+for f in $STAGED_FILES; do
+  if [ -f "$f" ]; then
+    if git grep -I -nE "$PATTERN" -- "$f" >/dev/null 2>&1; then
+      echo "ERROR: Found disallowed memory path pattern in $f"
+      git grep -nE "$PATTERN" -- "$f"
+      bad=1
+    fi
+  fi
+done
+if [ "$bad" -eq 1 ]; then
+  echo "Aborting commit. Fix the issues or remove 'memory/' prefix from directory fields."
+  echo "To enable this hook for local repo: git config core.hooksPath .githooks"
+  exit 1
+fi
+exit 0
