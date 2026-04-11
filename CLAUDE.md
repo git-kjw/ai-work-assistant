@@ -21,28 +21,28 @@
 지식의 생명주기와 성격에 따라 다음과 같이 그룹화하여 관리합니다.
 
 ### 2-1. 핵심 지식 그룹 (State / Evolving Knowledge)
-| 경로                  | 역할                                    | 성격                     |
-|---------------------|---------------------------------------|------------------------|
-| `memory/projects/`  | 프로젝트 메타 정보, 빌드 도구, 실제 경로 등            | 정적 정보                  |
-| `memory/domains/`   | **기술적 심장부** — 비즈니스 로직, 데이터 흐름, 인프라 연동 | **진화하는 지식**            |
-| `memory/decisions/` | 아키텍처 결정 기록 및 기술 선택 이유 (ADR)           | 정적 히스토리                |
-| `memory/prompts/`   | 작업 유형별 AI 행동 지침 및 반복 패턴 가이드           | **Adaptive Reference** |
-| `memory/notes/`     | 분석 중 발생한 비정형 메모 및 설정 가이드              | 임시 지식                  |
-| `memory/ideas/`     | 향후 개선 아이디어 및 기술적 제안 사항                | 제안 사항                  |
+| 경로                                      | 역할                                    | 성격                     |
+|-----------------------------------------|---------------------------------------|------------------------|
+| `~/ai-work-assistant/memory/projects/`  | 프로젝트 메타 정보, 빌드 도구, 실제 경로 등            | 정적 정보                  |
+| `~/ai-work-assistant/memory/domains/`   | **기술적 심장부** — 비즈니스 로직, 데이터 흐름, 인프라 연동 | **진화하는 지식**            |
+| `~/ai-work-assistant/memory/decisions/` | 아키텍처 결정 기록 및 기술 선택 이유 (ADR)           | 정적 히스토리                |
+| `~/ai-work-assistant/memory/prompts/`   | 작업 유형별 AI 행동 지침 및 반복 패턴 가이드           | **Adaptive Reference** |
+| `~/ai-work-assistant/memory/notes/`     | 분석 중 발생한 비정형 메모 및 설정 가이드              | 임시 지식                  |
+| `~/ai-work-assistant/memory/ideas/`     | 향후 개선 아이디어 및 기술적 제안 사항                | 제안 사항                  |
 
 ### 2-2. 동적 맥락 그룹 (Event / Contextual Log)
-| 경로                               | 역할                              | 성격     |
-|----------------------------------|---------------------------------|--------|
-| `memory/sessions/`               | 일일 작업 일지, 대화 맥락, Next Steps 요약  | 시계열 로그 |
-| `memory/sessions/context-log.md` | **지속적 컨텍스트** — 전체 세션의 핵심 요약 누적본 | 핵심 맥락  |
-| `memory/operations/`             | 태스크 관리, 루틴 업무, 회의록              | 운영 데이터 |
-| `memory/archive/`                | 오래된 세션이나 완료된 작업 데이터 보관소         | 아카이브   |
+| 경로                                                   | 역할                              | 성격     |
+|------------------------------------------------------|---------------------------------|--------|
+| `~/ai-work-assistant/memory/sessions/`               | 일일 작업 일지, 대화 맥락, Next Steps 요약  | 시계열 로그 |
+| `~/ai-work-assistant/memory/sessions/context-log.md` | **지속적 컨텍스트** — 전체 세션의 핵심 요약 누적본 | 핵심 맥락  |
+| `~/ai-work-assistant/memory/operations/`             | 태스크 관리, 루틴 업무, 회의록              | 운영 데이터 |
+| `~/ai-work-assistant/memory/archive/`                | 오래된 세션이나 완료된 작업 데이터 보관소         | 아카이브   |
 
 ### 2-3. 기타 인프라
-| 경로           | 역할                                      |
-|--------------|-----------------------------------------|
-| `real-path/` | symlink로 실제 프로젝트(`~/IdeaProjects/`)와 연결 |
-| `scripts/`   | 메모리 관리 및 프로젝트 초기화용 스크립트                 |
+| 경로                               | 역할                                      |
+|----------------------------------|-----------------------------------------|
+| `~/ai-work-assistant/real-path/` | symlink로 실제 프로젝트(`~/IdeaProjects/`)와 연결 |
+| `~/ai-work-assistant/scripts/`   | 메모리 관리 및 프로젝트 초기화용 스크립트                 |
 
 ---
 
@@ -51,10 +51,10 @@
 작업 지시를 받으면 반드시 아래 순서로 컨텍스트를 로드하세요.
 
 ```
-[ ] 1. memory/projects/ 에서 해당 프로젝트 존재 확인 (없으면 규칙 4에 따라 자동 등록)
-[ ] 2. memory/domains/ 에서 관련 기술 맵(데이터 흐름, Kafka/Redis 등) 조회
-[ ] 3. memory/sessions/context-log.md 및 최신 세션 로그에서 작업 맥락 확인
-[ ] 4. memory/prompts/ 에서 가이드 로드 (없으면 6-4 규칙에 따라 자율 생성)
+[ ] 1. ~/ai-work-assistant/memory/projects/ 에서 해당 프로젝트 존재 확인 (없으면 규칙 4에 따라 자동 등록)
+[ ] 2. ~/ai-work-assistant/memory/domains/ 에서 관련 기술 맵(데이터 흐름, Kafka/Redis 등) 조회
+[ ] 3. ~/ai-work-assistant/memory/sessions/context-log.md 및 최신 세션 로그에서 작업 맥락 확인
+[ ] 4. ~/ai-work-assistant/memory/prompts/ 에서 가이드 로드 (없으면 6-4 규칙에 따라 자율 생성)
 [ ] 5. 작업 수행
 ```
 
@@ -65,8 +65,8 @@
 ### 4-1. 신규 프로젝트 자동 탐색
 1. `~/IdeaProjects/` 하위를 탐색하여 해당 프로젝트 디렉토리를 찾는다.
 2. 프로젝트 구조를 분석한다 (기술 스택, 패키지 구조, 빌드 도구, 주요 모듈 등).
-3. `memory/projects/_template.md`를 기반으로 새 프로젝트 카드를 생성한다.
-4. `real-path/`에 심볼릭 링크를 안전하게 생성한다 (`ln -sfn`).
+3. `~/ai-work-assistant/memory/projects/_template.md`를 기반으로 새 프로젝트 카드를 생성한다.
+4. `~/ai-work-assistant/real-path/`에 심볼릭 링크를 안전하게 생성한다 (`ln -sfn`).
 
 ### 4-2. 프로젝트 내 패키지/모듈 탐색
 - 모노레포 구조인 경우 하위 패키지(예: `jk-bff-display-api`, `jk-bff-worker`)를 각각 파악한다
@@ -83,13 +83,13 @@
 에이전트는 모든 작업 완료 후 **개발자의 요청 없이도** 다음 트리거에 따라 지식을 기록/최신화해야 합니다.
 
 ### 5-1. 자동 지식 축적 트리거
-1. **등록 트리거**: 새로운 프로젝트나 모듈 발견 시 `projects/`에 즉시 등록한다.
-2. **분석 트리거**: 소스 코드의 상세 로직을 분석하면 즉시 `domains/` 노트를 생성하거나 보강한다.
-3. **결정 트리거**: 라이브러리 도입, 아키텍처 변경 등 중요 결정 시 `decisions/`에 ADR을 남긴다.
-4. **종료 트리거**: 세션 종료 시 `sessions/` 개별 로그 작성 및 `context-log.md`에 한 줄 요약을 추가한다.
+1. **등록 트리거**: 새로운 프로젝트나 모듈 발견 시 `~/ai-work-assistant/memory/projects/`에 즉시 등록한다.
+2. **분석 트리거**: 소스 코드의 상세 로직을 분석하면 즉시 `~/ai-work-assistant/memory/domains/` 노트를 생성하거나 보강한다.
+3. **결정 트리거**: 라이브러리 도입, 아키텍처 변경 등 중요 결정 시 `~/ai-work-assistant/memory/decisions/`에 ADR을 남긴다.
+4. **종료 트리거**: 세션 종료 시 `~/ai-work-assistant/memory/sessions/` 개별 로그 작성 및 `context-log.md`에 한 줄 요약을 추가한다.
 
 ### 5-2. 도메인 지식(domains/)의 깊이와 최신성
-`memory/domains/`는 단순 요약이 아닌 **Deep Technical Map**이어야 하며, 코드가 변경되면 즉시 동기화되어야 합니다.
+`~/ai-work-assistant/memory/domains/`는 단순 요약이 아닌 **Deep Technical Map**이어야 하며, 코드가 변경되면 즉시 동기화되어야 합니다.
 - **필수 포함 요소**: 
     - 데이터 흐름 (Cache-aside, Write-through 등 DB/Redis 전략)
     - 메시징 구조 (Kafka Topics, Payload 스키마, 메시지 체인)
@@ -106,30 +106,30 @@
 2. 작성 후 basic-memory MCP를 사용하여 저장하고 시맨틱 검색을 활성화한다.
 
 ### 6-2. basic-memory write_note 디렉토리 사용법
-- `directory` 파라미터는 `memory/` 루트에 대한 상대 경로(예: `projects`, `domains`)로 지정한다.
-- **주의**: `directory`에 `memory/` 접두사를 포함하지 않는다.
+- `directory` 파라미터는 `~/ai-work-assistant/memory/` 루트에 대한 상대 경로(예: `projects`, `domains`)로 지정한다.
+- **주의**: `directory`에 `~/ai-work-assistant/memory/` 접두사를 포함하지 않는다.
 
 ### 6-3. 가이드(prompts/) 활용 및 자율적 판단 (Adaptive Reference)
-- `memory/prompts/`의 가이드는 절대적 규칙이 아닌 **최적의 판단을 위한 참고 자료**이다.
+- `~/ai-work-assistant/memory/prompts/`의 가이드는 절대적 규칙이 아닌 **최적의 판단을 위한 참고 자료**이다.
 - 에이전트는 프로젝트의 규모, 긴급도, 복잡성을 고려하여 분석의 깊이와 범위를 스스로 결정한다.
 
 ### 6-4. 가이드 자율 생성 규칙
-- 특정 작업 유형에 대한 가이드가 `memory/prompts/`에 없는 경우, 에이전트는 `_template.md`를 기반으로 해당 작업의 베스트 프랙티스를 담은 가이드 파일을 스스로 생성하고 기록한다.
+- 특정 작업 유형에 대한 가이드가 `~/ai-work-assistant/memory/prompts/`에 없는 경우, 에이전트는 `_template.md`를 기반으로 해당 작업의 베스트 프랙티스를 담은 가이드 파일을 스스로 생성하고 기록한다.
 
 ---
 
 ## 7. 작업 유형별 행동 규칙
 
-각 작업 유형에 맞는 가이드를 `memory/prompts/`에서 먼저 로드하세요.
+각 작업 유형에 맞는 가이드를 `~/ai-work-assistant/memory/prompts/`에서 먼저 로드하세요.
 
-| 작업 유형   | 가이드 파일 (Reference Only)            |
-|:--------|:-----------------------------------|
-| 코드 분석   | `memory/prompts/analysis.md`       |
-| 디버깅     | `memory/prompts/debug.md`          |
-| 리팩토링    | `memory/prompts/refactor.md`       |
-| 기능 구현   | `memory/prompts/implementation.md` |
-| 테스트 작성  | `memory/prompts/test.md`           |
-| 설계/아키텍처 | `memory/prompts/design.md`         |
+| 작업 유형   | 가이드 파일 (Reference Only)                                |
+|:--------|:-------------------------------------------------------|
+| 코드 분석   | `~/ai-work-assistant/memory/prompts/analysis.md`       |
+| 디버깅     | `~/ai-work-assistant/memory/prompts/debug.md`          |
+| 리팩토링    | `~/ai-work-assistant/memory/prompts/refactor.md`       |
+| 기능 구현   | `~/ai-work-assistant/memory/prompts/implementation.md` |
+| 테스트 작성  | `~/ai-work-assistant/memory/prompts/test.md`           |
+| 설계/아키텍처 | `~/ai-work-assistant/memory/prompts/design.md`         |
 
 ---
 
@@ -161,14 +161,14 @@ API 분석 요청을 받으면 아래 순서로 탐색하여 지식을 축적합
 > `CLAUDE.md` 와 각 `~/ai-work-assistant/memory/prompts/` 가이드 파일을 직접 수정한다.
 
 ### 10-1. 업데이트가 필요한 상황
-- 반복 작업에서 공통 패턴이 발견되어 `prompts/` 가이드 보강이 필요한 경우
+- 반복 작업에서 공통 패턴이 발견되어 `~/ai-work-assistant/memory/prompts/` 가이드 보강이 필요한 경우
 - 기존 규칙이 특정 프로젝트 구조나 새로운 기술 스택에 맞지 않는 경우
 - 새로운 작업 유형이나 폴더 구조가 추가되는 경우
 
 ### 10-2. 수정 및 기록 절차
 1. 변경이 필요한 이유를 개발자에게 설명하고 승인을 받는다.
 2. `CLAUDE.md` 또는 해당 가이드 파일을 수정한다. (기존 규칙은 `~~취소선~~` 처리 후 대체 규칙 추가 권장)
-3. `memory/decisions/`에 **ADR(Architecture Decision Record)** 파일로 변경 이유와 내용을 기록한다.
+3. `~/ai-work-assistant/memory/decisions/`에 **ADR(Architecture Decision Record)** 파일로 변경 이유와 내용을 기록한다.
 4. 새로운 작업 유형이 생길경우 ~/ai-work-assistant/memory/prompts/_template.md` 기반으로 새 가이드 파일 생성
 ---
 
@@ -192,7 +192,7 @@ API 분석 요청을 받으면 아래 순서로 탐색하여 지식을 축적합
 
 1. 요청받은 변경/분석 범위를 누락 없이 반영했다.
 2. 변경이 기존 동작에 미치는 영향을 확인했고, 필요한 검증을 수행했다.
-3. 결과를 `memory/` 하위 적절한 폴더에 기록(자동 축적 규칙 준수)했다.
+3. 결과를 `~/ai-work-assistant/memory/` 하위 적절한 폴더에 기록(자동 축적 규칙 준수)했다.
 4. 최종 결과와 핵심 판단 근거를 개발자에게 명확히 전달했다.
 
 ---
