@@ -29,8 +29,9 @@ macOS & iOS Universal 계좌 입출금 관리 앱. 개인 취미 프로젝트.
 | 프로젝트명 | MoneyFlow |
 | 유형 | macOS & iOS Universal 앱 |
 | 목적 | 개인 계좌 입출금 내역 관리 및 연간 납입 한도 추적 |
+| 실제 경로 | `~/IdeaProjects/MoneyFlow` |
+| symlink 경로 | `~/ai-work-assistant/real-path/MoneyFlow` |
 | 개발자 | jwkim |
-| 로컬 경로 | `~/IdeaProjects/MoneyFlow` |
 | 개발 언어 | Swift |
 | 프레임워크 | SwiftUI |
 | 최소 버전 | iOS 17.0+, macOS 14.0+ |
