@@ -147,6 +147,14 @@ struct Transaction {
 
 ## 작업 이력
 
+### 2026-04-12 — Dashboard 연도별 납입한도 기준 연도 보정
+- **작업 유형**: 구현
+- **변경 내용**: `DashboardView`에서 한도 진행률 계산 기준 연도를 `showAllTime` 상태에 따라 동적으로 전달하도록 수정하고, 연도별 모드에서는 `"{선택연도}년 납입"` 라벨로 표시하도록 반영
+- **변경 이유**: 연도별 탭에서 `AccountStatistics`가 기본값(현재 연도)으로 계산되어 과거/미래 연도의 납입한도 달성률이 0 또는 오표시되던 문제 해결
+- **영향 범위**: `~/IdeaProjects/MoneyFlow/MoneyFlow/Views/DashboardView.swift`
+
+---
+
 ### 2026-04-12 — MoneyFlow 구조 분석
 - **작업 유형**: 분석
 - **변경 내용**: 프로젝트 구조/데이터 흐름 분석, 프로젝트 카드 및 도메인 문서 작성, `real-path` symlink 등록
