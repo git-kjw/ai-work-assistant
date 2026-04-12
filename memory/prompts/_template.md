@@ -1,3 +1,9 @@
+---
+title: _template
+type: note
+permalink: ai-work-assistant/prompts/template
+---
+
 # {작업유형} 가이드 (Reference Only)
 
 > 이 문서는 {작업유형} 작업을 수행할 때 참고하는 **기본 원칙과 권장 사항**입니다.

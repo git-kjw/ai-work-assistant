@@ -102,3 +102,5 @@ cd ~/IdeaProjects/{project-dir}
 - [ ] `{project}-{module}-{topic}.md`
 
 ---
+
+- **Frontmatter** — 메타데이터가 에이전트의 라우팅 역할. category, tags, status로 검색 범위를 좁힌다.
