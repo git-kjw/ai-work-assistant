@@ -29,7 +29,7 @@
 
 1. 작업 루트로 이동  
    `cd ~/ai-work-assistant`
-2. Claude Code 또는 Copilot CLI를 루트에서 실행
+2. Codex, Claude Code 또는 Copilot CLI를 루트에서 실행
 3. 자연어로 작업 지시
 4. 결과가 `memory/`에 정리되어 누적되는지 확인
 
@@ -84,6 +84,7 @@ Kafka consumer lag 해결 방법 notes에 정리해줘.
 - 노트 간 연결은 Obsidian `[[노트명]]` 링크 적극 활용
 - `write_note.directory`는 `memory/` 기준 상대 경로 사용  
   (예: `projects`, `domains`, `tasks`)
+- Codex MCP 설정은 `~/.codex/config.toml`, Copilot CLI MCP 설정은 `.copilot/mcp.json` 참고
 
 ## 권장 작업 흐름
 
@@ -94,5 +95,7 @@ Kafka consumer lag 해결 방법 notes에 정리해줘.
 
 ## 참고 문서
 
-- 기본 정책: `CLAUDE.md`
+- 공통 에이전트 정책: `AGENTS.md`
+- Claude Code 진입점: `CLAUDE.md`
+- Copilot 지침: `.github/copilot-instructions.md`
 - 요청 예시: `PROMPT_EXAMPLES.md`
